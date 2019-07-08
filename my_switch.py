@@ -48,6 +48,7 @@ class mySwitch(app_manager.RyuApp):
         self.switch={}      #switch[dpdi] : switch_features
         self.port={}        #port[dpid][port] : port_desc_stats
         self.link={}        #link[switch][port] : switch,port
+        self.host={}
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def switch_features_handler(self, ev):
@@ -178,6 +179,9 @@ class mySwitch(app_manager.RyuApp):
 
         # learn a mac address to avoid FLOOD next time.
         self.mac_to_port[dpid][src] = in_port
+        
+        if src not in self.host:
+            self.host[src]={"switch":dpid,"port":in_port}
 
         if dst in self.mac_to_port[dpid]:
             out_port = self.mac_to_port[dpid][dst]
@@ -334,4 +338,10 @@ class SimpleSwitchController(ControllerBase):
         simple_switch.link_discovery()
         time.sleep(0.1)
         body = json.dumps(simple_switch.link)
+        return Response(content_type='application/json', body=body)
+
+    @route('simpleswitch', url+'host', methods=['GET'])
+    def get_host(self, req, **kwargs):
+        simple_switch = self.simpl_switch_spp
+        body = json.dumps(simple_switch.host)
         return Response(content_type='application/json', body=body)
