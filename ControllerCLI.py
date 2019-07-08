@@ -25,6 +25,10 @@ def get_link():
     response = requests.get("http://127.0.0.1:8080/switch/link")
     return response.json()
 
+def get_host():
+    response = requests.get("http://127.0.0.1:8080/switch/host")
+    return response.json()
+
 def set_intro(switch_map):
     intro='\nWelcome to command line\n\n'+'your switch :\n'
     for switch in switch_map:
@@ -41,6 +45,7 @@ class Shell(cmd.Cmd):
     port_map=get_port() 
     intro=set_intro(switch_map)
     link=get_link()
+    host=get_host()
 
     def do_flows(self,switch):
         """flows [s1]\nShow s1 flow entry"""
@@ -86,13 +91,12 @@ class Shell(cmd.Cmd):
             print(json.dumps(Shell.port_map, indent=4, sort_keys=True))
 
     def do_firewall(self,line):
-        """ firewall [deny/delete] [s1] [in_port=1] [eth_type=0x0800] [src_ip=10.0.0.1] [src_mac=00:00:00:00:00:00] [dst_ip=10.0.0.1] [dst_mac=00:00:00:00:00:00]\nSet firewall"""
+        """ firewall [add/delete/modify] [s1] [in_port=1] [eth_type=0x0800] [src_ip=10.0.0.1] [src_mac=00:00:00:00:00:00] [dst_ip=10.0.0.1] [dst_mac=00:00:00:00:00:00]\nSet firewall"""
         if line:
             line=line.split()
             if line[1] in Shell.switch_map:
                 flow={}
-                par_error=0
-                flow['action']=line[0]
+                error=0
                 for par in line[2:]:
                     tmp=par.split("=")
                     if tmp[0]=='in_port':
@@ -109,14 +113,17 @@ class Shell(cmd.Cmd):
                         flow['eth_dst']=tmp[1]
                     else:
                         print "parameter error : "+tmp[0]
-                        error_flag=1
+                        error=1
                         break
-                if par_error==0:
-                    response = requests.put("http://127.0.0.1:8080/switch/flowtable/"+Shell.switch_map[line[1]],data=json.dumps(flow))
+                if error==0:
+                    if line[0]=="add":
+                        response = requests.post("http://127.0.0.1:8080/switch/flowtable/"+Shell.switch_map[line[1]],data=json.dumps(flow))
+                    elif line[0]=="delete":
+                        response = requests.delete("http://127.0.0.1:8080/switch/flowtable/"+Shell.switch_map[line[1]],data=json.dumps(flow))
             else:
                 print "can not find the switch"
         else:
-            print """ firewall [deny/delete] [s1] [in_port=1] [eth_type=0x0800] [src_ip=10.0.0.1] [src_mac=00:00:00:00:00:00] [dst_ip=10.0.0.1] [dst_mac=00:00:00:00:00:00]\nSet firewall"""
+            print """ firewall [add/delete/modify] [s1] [in_port=1] [eth_type=0x0800] [src_ip=10.0.0.1] [src_mac=00:00:00:00:00:00] [dst_ip=10.0.0.1] [dst_mac=00:00:00:00:00:00]\nSet firewall"""
 
     def do_link(self,line):
         """link\nShow the link"""
@@ -141,6 +148,11 @@ class Shell(cmd.Cmd):
         nx.draw_networkx_edge_labels(G,pos=nx.spectral_layout(G),edge_labels=edge_labels)
         plt.draw()
         plt.savefig('topo.png')
+
+    def do_host(self,line):
+        Shell.host=get_host()
+        print(json.dumps(Shell.host, indent=4, sort_keys=True))
+
     def do_exit(self,line):
         """exit\nexit the command"""
         return True
