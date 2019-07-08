@@ -26,9 +26,11 @@ Details in the [user guide](https://github.com/abba123/SDNMS/blob/master/guide.m
       
 # TODO
 
-- [ ] Port statistic
+- [ ] firewall modify
+- [ ] link statistic
 - [ ] host information
 - [ ] delay between switch
+- [ ] delay between host
 
 # Help
 connect me a0981861951@gmail.com
