@@ -29,6 +29,10 @@ Details in the [user guide](https://github.com/abba123/SDNMS/blob/master/guide.m
 - [ ] firewall modify
 - [ ] link statistic
 - [ ] host information
+- [ ] save flow entry
+- [ ] load flow entry
+- [ ] ARP proxy
+- [ ] DNS proxy
 - [ ] delay between switch
 - [ ] delay between host
 
