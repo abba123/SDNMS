@@ -27,8 +27,8 @@ Details in the [user guide](https://github.com/abba123/SDNMS/blob/master/guide.m
 # TODO
 
 - [ ] firewall modify
-- [ ] link statistic
 - [ ] host information
+- [ ] database (SQLite)
 - [ ] save flow entry
 - [ ] load flow entry
 - [ ] ARP proxy
