@@ -46,6 +46,7 @@ class Shell(cmd.Cmd):
     intro=set_intro(switch_map)
     link=get_link()
     host=get_host()
+    command=[]
 
     def do_flows(self,switch):
         """flows [s1]\nShow s1 flow entry"""
@@ -166,11 +167,23 @@ class Shell(cmd.Cmd):
         Shell.host=get_host()
         print(json.dumps(Shell.host, indent=4, sort_keys=True))
 
+    def do_history(self,line):
+        count=0
+        for cmd in Shell.command:
+            print count,cmd
+            count+=1
+
     def do_exit(self,line):
         """exit\nexit the command"""
         return True
      
     def emptyline(self):
          pass
+    
+    def precmd(self, line):
+        line = line.lower()
+        Shell.command.append(line)
+        return line
+
 if __name__ == '__main__':
     Shell().cmdloop()
