@@ -22,6 +22,7 @@ from ryu.lib.packet import packet
 from ryu.lib.packet import ethernet
 from ryu.lib.packet import ether_types
 from ryu.lib.packet import lldp
+from ryu.lib.packet import ipv4
 
 from webob import Response
 from ryu.app.wsgi import ControllerBase, WSGIApplication, route
@@ -171,8 +172,15 @@ class mySwitch(app_manager.RyuApp):
         
         dst = eth.dst
         src = eth.src
+        eth_type=eth.ethertype
 
         dpid = datapath.id
+        if eth_type==2048:
+            ip = pkt.get_protocols(ipv4.ipv4)[0]
+            ipv4_src=ip.src
+            ipv4_dst=ip.dst
+            ip_proto=ip.proto
+
         self.mac_to_port.setdefault(dpid, {})
 
         self.logger.info("packet in %s %s %s %s", dpid, src, dst, in_port)
@@ -180,8 +188,9 @@ class mySwitch(app_manager.RyuApp):
         # learn a mac address to avoid FLOOD next time.
         self.mac_to_port[dpid][src] = in_port
         
-        if src not in self.host:
-            self.host[src]={"switch":dpid,"port":in_port}
+        if eth_type==0x0800 and ipv4_src not in self.host:
+           self.host[ipv4_src]={"switch":dpid,"port":in_port,"mac":eth.src}
+            
 
         if dst in self.mac_to_port[dpid]:
             out_port = self.mac_to_port[dpid][dst]
@@ -192,7 +201,10 @@ class mySwitch(app_manager.RyuApp):
 
         # install a flow to avoid packet_in next time
         if out_port != ofproto.OFPP_FLOOD:
-            match = parser.OFPMatch(in_port=in_port, eth_dst=dst, eth_src=src)
+            if eth_type==0x0800:
+                match = parser.OFPMatch(in_port=in_port, eth_dst=dst, eth_src=src, eth_type=eth_type, ipv4_src=ipv4_src, ipv4_dst=ipv4_dst, ip_proto=ip_proto)
+            else:
+                match = parser.OFPMatch(in_port=in_port, eth_dst=dst, eth_src=src, eth_type=eth_type)
             # verify if we have a valid buffer_id, if yes avoid to send both
             # flow_mod & packet_out
             if msg.buffer_id != ofproto.OFP_NO_BUFFER:

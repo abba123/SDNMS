@@ -137,15 +137,28 @@ class Shell(cmd.Cmd):
         """topo\nShow the topo"""
         G = nx.Graph()
         edge_labels={}
+
+        plt.figure(figsize=(10,10))
+        
         for switch in Shell.switch_map:
-            G.add_node(switch,label=switch)
+            G.add_node(switch)
+        
+        for eth in Shell.host:
+            G.add_node(eth)
+
         for switch1 in Shell.link:
             for x in Shell.link[switch1]:
                 for port1 in x:
                     G.add_edge("s"+switch1,"s"+x[port1][0])
                     edge_labels["s"+switch1,"s"+x[port1][0]]= "(s"+switch1+","+port1+") --- (s"+x[port1][0]+","+x[port1][1]+")"
-        nx.draw(G,with_labels=True,pos=nx.spectral_layout(G))
-        nx.draw_networkx_edge_labels(G,pos=nx.spectral_layout(G),edge_labels=edge_labels)
+        
+        for eth in Shell.host:
+            G.add_edge(eth,"s"+str(Shell.host[eth]["switch"]))
+            edge_labels[eth,"s"+str(Shell.host[eth]["switch"])]= "("+eth+") --- (s"+str(Shell.host[eth]["switch"])+","+str(Shell.host[eth]["port"])+")"
+        
+        pos=nx.spring_layout(G)
+        nx.draw(G,with_labels=True,pos=pos)
+        #nx.draw_networkx_edge_labels(G,pos=pos,edge_labels=edge_labels)
         plt.draw()
         plt.savefig('topo.png')
 
