@@ -172,7 +172,7 @@ class Shell(cmd.Cmd):
         for cmd in Shell.command:
             print count,cmd
             count+=1
-
+    
     def do_exit(self,line):
         """exit\nexit the command"""
         return True

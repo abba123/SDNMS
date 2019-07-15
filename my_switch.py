@@ -220,13 +220,14 @@ class mySwitch(app_manager.RyuApp):
                                   in_port=in_port, actions=actions, data=data)
         datapath.send_msg(out)
 
-    def send_flow_stats_request(self):
+    def send_flow_stats_request(self,dpid):
         for datapath in self.datapaths.values():
-            ofp = datapath.ofproto
-            parser = datapath.ofproto_parser
-            req=parser.OFPFlowStatsRequest(datapath)
+            if datapath.id == int(dpid):
+                ofp = datapath.ofproto
+                parser = datapath.ofproto_parser
+                req=parser.OFPFlowStatsRequest(datapath)
         
-            datapath.send_msg(req)
+                datapath.send_msg(req)
 
     @set_ev_cls(ofp_event.EventOFPFlowStatsReply,MAIN_DISPATCHER)
     def flow_stat_reply_handler(self,ev):
@@ -243,9 +244,22 @@ class mySwitch(app_manager.RyuApp):
             flows['cookie']=stat.cookie
             flows['packet_count']=stat.packet_count
             flows['byte_count']=stat.byte_count
-            flows['match']=str(stat.match)
-            flows['instructions']=str(stat.instructions)
-        
+            flows['match']={}
+
+            if 'eth_dst' in stat.match:
+                flows['match']['eth_dst']=stat.match['eth_dst']
+            if 'eth_src' in stat.match:
+                flows['match']['eth_src']=stat.match['eth_src']
+            if 'eth_type' in stat.match:
+                flows['match']['eth_type']=stat.match['eth_type']
+            if 'ipv4_dst' in stat.match:
+                flows['match']['ipv4_dst']=stat.match['ipv4_dst']
+            if 'ipv4_src' in stat.match:
+                flows['match']['ipv4_src']=stat.match['ipv4_src']
+            
+            flows['instructions']={}
+            if stat.instructions:
+                flows['instructions']['outport']=stat.instructions[0].actions[0].port
             total_flows.append(flows)    
         self.flow_table[str(ev.msg.datapath.id)]=total_flows
     
@@ -283,13 +297,12 @@ class SimpleSwitchController(ControllerBase):
         simple_switch=self.simpl_switch_spp
         dpid = kwargs['dpid']
 
-        simple_switch.send_flow_stats_request()
+        simple_switch.send_flow_stats_request(dpid)
         time.sleep(0.1)
-        if dpid in simple_switch.flow_table:
-            body = json.dumps(simple_switch.flow_table[dpid])
-            return Response(content_type='application/json', body=body)
+        body = json.dumps(simple_switch.flow_table[dpid])
+        return Response(content_type='application/json', body=body)
 
-    @route('simpleswitch', url+'flowtable/{dpid}', methods=['PUT'])
+    @route('simpleswitch', url+'flowtable/{dpid}', methods=['POST'])
     def set_flow_table(self, req, **kwargs):
         simple_switch=self.simpl_switch_spp
         dpid=kwargs['dpid']
@@ -308,11 +321,28 @@ class SimpleSwitchController(ControllerBase):
         
         match=parser.OFPMatch(**match_dic)
         actions = []
-        if flow['action']=='deny':
-            simple_switch.add_flow(datapath, 0, match, actions)
-        elif flow['action']=='delete':
-            simple_switch.del_flow(datapath,match)
+        simple_switch.add_flow(datapath, 0, match, actions)
+    
+    @route('simpleswitch', url+'flowtable/{dpid}', methods=['DELETE'])
+    def del_flow_table(self, req, **kwargs):
+        simple_switch=self.simpl_switch_spp
+        dpid=kwargs['dpid']
+        flow=json.loads(req.body)
 
+        datapath=simple_switch.datapaths[dpid]
+        parser = datapath.ofproto_parser
+        
+        match_dic={}
+        if 'eth_type' in flow : match_dic['eth_type']=int(flow['eth_type'],16)
+        if 'in_port' in flow : match_dic['in_port']=int(flow['in_port'])
+        if 'ipv4_src' in flow : match_dic['ipv4_src']=flow['ipv4_src']
+        if 'ipv4_dst' in flow : match_dic['ipv4_dst']=flow['ipv4_dst']
+        if 'eth_src' in flow : match_dic['eth_src']=flow['eth_src']
+        if 'eth_dst' in flow : match_dic['eth_dst']=flow['eth_dst']
+        
+        match=parser.OFPMatch(**match_dic)
+        simple_switch.del_flow(datapath,match)
+    
     @route('simpleswitch', url+'switchDPID', methods=['GET'])
     def get_switch_dpid(self, req, **kwargs):
         simple_switch=self.simpl_switch_spp
