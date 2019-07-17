@@ -387,3 +387,5 @@ class SimpleSwitchController(ControllerBase):
         simple_switch = self.simpl_switch_spp
         body = json.dumps(simple_switch.host)
         return Response(content_type='application/json', body=body)
+
+

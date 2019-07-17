@@ -173,6 +173,20 @@ class Shell(cmd.Cmd):
             print count,cmd
             count+=1
     
+    def do_saveflow(self,line):
+        line=line.split()
+        if len(line) >= 2:
+            switch=line[0]
+            if switch in Shell.switch_map:
+                filename=line[1]
+                response = requests.get("http://127.0.0.1:8080/switch/flowtable/"+Shell.switch_map[switch])
+                f=open(filename,"w")
+                json.dump(response.json(), f)
+                f.close()
+            else:
+                print "can not find the switch"
+        else:
+            print "savefile [s1] [filename]"
     def do_exit(self,line):
         """exit\nexit the command"""
         return True
