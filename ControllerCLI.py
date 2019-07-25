@@ -178,15 +178,28 @@ class Shell(cmd.Cmd):
         if len(line) >= 2:
             switch=line[0]
             if switch in Shell.switch_map:
-                filename=line[1]
-                response = requests.get("http://127.0.0.1:8080/switch/flowtable/"+Shell.switch_map[switch])
-                f=open(filename,"w")
-                json.dump(response.json(), f)
-                f.close()
+                filename=line[1]+'.json'
+                response = requests.post("http://127.0.0.1:8080/switch/saveflow/"+Shell.switch_map[switch],data=json.dumps(filename))
             else:
                 print "can not find the switch"
         else:
-            print "savefile [s1] [filename]"
+            print "savefile [s1] [filename].json"
+    
+    def do_loadflow(self,line):
+        line=line.split()
+        if len(line) >= 2:
+            switch=line[0]
+            if switch in Shell.switch_map:
+                filename=line[1]
+                f=open(filename,"r")
+                flow=json.load(f)
+                f.close()
+                response = requests.post("http://127.0.0.1:8080/switch/loadflow/"+Shell.switch_map[switch],data=json.dumps(flow))
+            else:
+                print "can not find the switch"
+        else:
+            print "loadfile [s1] [filename].json"
+
     def do_exit(self,line):
         """exit\nexit the command"""
         return True

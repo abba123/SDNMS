@@ -388,4 +388,13 @@ class SimpleSwitchController(ControllerBase):
         body = json.dumps(simple_switch.host)
         return Response(content_type='application/json', body=body)
 
-
+    @route('simpleswitch', url+'saveflow/{dpid}', methods=['POST'])
+    def save_flow(self, req, **kwargs):
+        simple_switch = self.simpl_switch_spp
+        dpid=kwargs['dpid']
+        filename=json.loads(req.body)
+        simple_switch.send_flow_stats_request(dpid)
+        time.sleep(0.1)
+        f=open(filename,"w")
+        json.dump(simple_switch.flow_table[dpid],f)
+        f.close()
