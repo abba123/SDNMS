@@ -401,6 +401,7 @@ class SimpleSwitchController(ControllerBase):
             tmp={}
             tmp['instructions']=flow['instructions']
             tmp['match']=flow['match']
+            tmp['priority']=flow['priority']
             flows.append(tmp)
         print flows
         json.dump(flows, f, indent=4, sort_keys=True)
@@ -410,10 +411,24 @@ class SimpleSwitchController(ControllerBase):
     def load_flow(self, req, **kwargs):
         simple_switch = self.simpl_switch_spp
         dpid=kwargs['dpid']
+        datapath=simple_switch.datapaths[dpid]
+        parser=datapath.ofproto_parser
+        match=parser.OFPMatch()
+        simple_switch.del_flow(datapath,match)
         filename=req.body
         f=open(filename,"r")
         flows=json.load(f)
         for flow in flows:
-            print x['priority']
-        #print(json.dumps(flow, indent=4, sort_keys=True))
+            print flow
+            match=parser.OFPMatch(**flow['match'])
+            #match=parser.OFPMatch()
+            if flow['instructions']:
+                actions = [parser.OFPActionOutput(port=int(flow['instructions']['outport']))]
+            else:
+                actions = []
+            print datapath
+            print flow['priority']
+            print match
+            print actions
+            simple_switch.add_flow(datapath, flow['priority'], match, actions)
         f.close()
