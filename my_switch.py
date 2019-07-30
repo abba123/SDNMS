@@ -392,9 +392,28 @@ class SimpleSwitchController(ControllerBase):
     def save_flow(self, req, **kwargs):
         simple_switch = self.simpl_switch_spp
         dpid=kwargs['dpid']
-        filename=json.loads(req.body)
+        filename=req.body
         simple_switch.send_flow_stats_request(dpid)
         time.sleep(0.1)
         f=open(filename,"w")
-        json.dump(simple_switch.flow_table[dpid],f)
+        flows=[]
+        for flow in simple_switch.flow_table[dpid]:
+            tmp={}
+            tmp['instructions']=flow['instructions']
+            tmp['match']=flow['match']
+            flows.append(tmp)
+        print flows
+        json.dump(flows, f, indent=4, sort_keys=True)
+        f.close()
+
+    @route('simpleswitch', url+'loadflow/{dpid}', methods=['POST'])
+    def load_flow(self, req, **kwargs):
+        simple_switch = self.simpl_switch_spp
+        dpid=kwargs['dpid']
+        filename=req.body
+        f=open(filename,"r")
+        flows=json.load(f)
+        for flow in flows:
+            print x['priority']
+        #print(json.dumps(flow, indent=4, sort_keys=True))
         f.close()
