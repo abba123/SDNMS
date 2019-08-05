@@ -48,8 +48,9 @@ class Shell(cmd.Cmd):
     host=get_host()
     command=[]
 
-    def do_flows(self,switch):
-        """flows [s1]\nShow s1 flow entry"""
+    def do_flows(self,line):
+        """Command: flows [s1]\nDescription: Show s1 flow entry"""
+        switch=line
         if switch:
             if switch in Shell.switch_map:
                 response = requests.get("http://127.0.0.1:8080/switch/flowtable/"+Shell.switch_map[switch])
@@ -57,10 +58,11 @@ class Shell(cmd.Cmd):
             else:
                 print "can not find the switch"
         else:
-            print """flows [s1]\nShow s1 flow entry"""
+            print """Command: flows [s1]\ndescription: Show s1 flow entry"""
     
-    def do_switch(self,switch):
-        """switch [s1]\nShow switchs description"""
+    def do_switch(self,line):
+        """Command: switch [s1]\nDescription: Show switchs description"""
+        switch=line
         if switch:
             if switch in Shell.switch_map:
                 response = requests.get("http://127.0.0.1:8080/switch/switch/"+Shell.switch_map[switch])
@@ -71,13 +73,13 @@ class Shell(cmd.Cmd):
             Shell.switch_map=get_switch()
             print(json.dumps(Shell.switch_map.keys(), indent=4, sort_keys=True))
     
-    def do_port(self,arg):
-        """port [s1] [1]\nShow ports description"""
-        if arg:
-            arg=arg.split()
-            if len(arg) ==2:
-                switch = arg[0]
-                port = arg[1]
+    def do_port(self,line):
+        """Command: port [s1] [1]\nDescription: Show ports description"""
+        if line:
+            line=line.split()
+            if len(line) ==2:
+                switch = line[0]
+                port = line[1]
                 if switch not in Shell.switch_map:
                     print "can not find the switch"
                 elif port not in Shell.port_map[switch]:
@@ -86,13 +88,13 @@ class Shell(cmd.Cmd):
                     response = requests.get("http://127.0.0.1:8080/switch/port/"+Shell.switch_map[switch]+"/"+port)
                     print(json.dumps(response.json(), indent=4, sort_keys=True))
             else:
-                print "port [s1] [1]\nshow ports description"
+                print "Command: port [s1] [1]\nDescription: show ports description"
         else:
             Shell.port_map=get_port()
             print(json.dumps(Shell.port_map, indent=4, sort_keys=True))
 
     def do_firewall(self,line):
-        """ firewall [add/delete/modify] [s1] [in_port=1] [eth_type=0x0800] [src_ip=10.0.0.1] [src_mac=00:00:00:00:00:00] [dst_ip=10.0.0.1] [dst_mac=00:00:00:00:00:00]\nSet firewall"""
+        """Command: firewall [add/delete] [s1] [in_port=1] [eth_type=0x0800] [src_ip=10.0.0.1] [src_mac=00:00:00:00:00:00] [dst_ip=10.0.0.1] [dst_mac=00:00:00:00:00:00]\nDescription: Set firewall"""
         if line:
             line=line.split()
             if line[1] in Shell.switch_map:
@@ -124,10 +126,10 @@ class Shell(cmd.Cmd):
             else:
                 print "can not find the switch"
         else:
-            print """ firewall [add/delete/modify] [s1] [in_port=1] [eth_type=0x0800] [src_ip=10.0.0.1] [src_mac=00:00:00:00:00:00] [dst_ip=10.0.0.1] [dst_mac=00:00:00:00:00:00]\nSet firewall"""
+            print """Command: firewall [add/delete] [s1] [in_port=1] [eth_type=0x0800] [src_ip=10.0.0.1] [src_mac=00:00:00:00:00:00] [dst_ip=10.0.0.1] [dst_mac=00:00:00:00:00:00]\nDescription: Set firewall"""
 
     def do_link(self,line):
-        """link\nShow the link"""
+        """Command: link\nDescription: Show the link"""
         Shell.link=get_link()
         for switch1 in Shell.link:
             for x in Shell.link[switch1]:
@@ -135,7 +137,7 @@ class Shell(cmd.Cmd):
                     print "(s"+switch1+","+port1+") --- (s"+x[port1][0]+","+x[port1][1]+")"
     
     def do_topo(self,line):
-        """topo\nShow the topo"""
+        """Command: topo\nDescription: Create the topo"""
         G = nx.Graph()
         edge_labels={}
 
@@ -164,16 +166,19 @@ class Shell(cmd.Cmd):
         plt.savefig('topo.png')
 
     def do_host(self,line):
+        """Command: host\nDescription: Show host"""
         Shell.host=get_host()
         print(json.dumps(Shell.host, indent=4, sort_keys=True))
 
     def do_history(self,line):
+        """Command: history\nDescription: Show history command"""
         count=0
         for cmd in Shell.command:
             print count,cmd
             count+=1
     
     def do_saveflow(self,line):
+        """Command: saveflow [s1] [filename]\nDescription: Save switch flow entry"""
         line=line.split()
         if len(line) >= 2:
             switch=line[0]
@@ -183,9 +188,10 @@ class Shell(cmd.Cmd):
             else:
                 print "can not find the switch"
         else:
-            print "savefile [s1] [filename].json"
+            print "Command: savefile [s1] [filename]\nDescription: Save switch flow entry"
     
     def do_loadflow(self,line):
+        """Command: loadflow [s1] [filename]\nDescription: Load switch flow entry"""
         line=line.split()
         if len(line) >= 2:
             switch=line[0]
@@ -195,7 +201,7 @@ class Shell(cmd.Cmd):
             else:
                 print "can not find the switch"
         else:
-            print "loadfile [s1] [filename]"
+            print """Command: loadflow [s1] [filename]\nDescription: Load switch flow entry"""
 
     def do_exit(self,line):
         """exit\nexit the command"""

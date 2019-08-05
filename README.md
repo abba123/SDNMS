@@ -14,7 +14,7 @@ We use mininet to create virtual network
 
 Start our Ryu controller
 
-    ryu-manager --verbose mySwitch.py
+    ryu-manager --verbose my_switch.py
     
 Open CLI
 
@@ -26,15 +26,11 @@ Details in the [user guide](https://github.com/abba123/SDNMS/blob/master/guide.m
       
 # TODO
 
-- [ ] firewall modify
-- [ ] host information
-- [ ] database (SQLite)
-- [ ] save flow entry
-- [ ] load flow entry
 - [ ] ARP proxy
 - [ ] DNS proxy
 - [ ] delay between switch
 - [ ] delay between host
+- [ ] database (SQLite)
 
 # Help
 connect me a0981861951@gmail.com
