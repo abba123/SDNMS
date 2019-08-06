@@ -134,8 +134,10 @@ class Shell(cmd.Cmd):
         for switch1 in Shell.link:
             for x in Shell.link[switch1]:
                 for port1 in x:
-                    print "(s"+switch1+","+port1+") --- (s"+x[port1][0]+","+x[port1][1]+")"
-    
+                    print "(s"+switch1+",p"+port1+") --- (s"+x[port1][0]+",p"+x[port1][1]+")"
+        Shell.host=get_host()
+        for h in Shell.host:
+            print "("+h+") --- (s" + str(Shell.host[h]["switch"])+",p"+str(Shell.host[h]["port"])+")"
     def do_topo(self,line):
         """Command: topo\nDescription: Create the topo"""
         G = nx.Graph()
