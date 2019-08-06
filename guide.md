@@ -1,12 +1,13 @@
 show all command
 
 * help
-
+      
       >help
       Documented commands (type help <topic>):
       ========================================
-      exit  firewall  flows  help  link  port  switch  topo
-
+      exit      flows  history  link      port      switch
+      firewall  help   host     loadflow  saveflow  topo
+      
 exit CLI
 
 * exit
@@ -104,3 +105,64 @@ show topology
 
       >topo
      ![image](https://github.com/abba123/SDNMS/blob/master/topo.png)
+
+show history command
+
+* history
+
+      >hisotry
+      0 switch
+      1 switch s1
+      2 flows s1
+      3 help
+      4 link
+      5 host
+      6 link
+      7 host
+      8 history
+
+show host information
+
+* host
+
+      >host
+      {
+          "10.0.0.1": {
+              "mac": "00:00:00:00:00:01", 
+              "port": 2, 
+              "switch": 1
+          }, 
+          "10.0.0.2": {
+              "mac": "00:00:00:00:00:02", 
+              "port": 3, 
+              "switch": 1
+          }, 
+          "10.0.0.3": {
+              "mac": "00:00:00:00:00:03", 
+              "port": 2, 
+              "switch": 2
+          }, 
+          "10.0.0.4": {
+              "mac": "00:00:00:00:00:04", 
+              "port": 3, 
+              "switch": 2
+          }, 
+          "10.0.0.5": {
+              "mac": "00:00:00:00:00:05", 
+              "port": 4, 
+              "switch": 2
+          }
+      }
+
+save flow entry
+
+* saveflow
+
+      >saveflow s1 flow.json
+
+load flow entry
+
+* loadflow
+
+      >loadflow s1 flow.json
+
