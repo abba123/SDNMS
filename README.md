@@ -1,5 +1,5 @@
 # SDNMS
-SDNMS is a networking monitor system for SDN(Software Defined Netowrk). 
+SDNMS is a networking monitor system for SDN(Software Defined Network). 
 We provide a centralized control for all SDN switch.
 
 # Related Installation
